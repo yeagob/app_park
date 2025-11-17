@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs').promises;
 const { v4: uuidv4 } = require('uuid');
+const { authenticate } = require('../middleware/authMiddleware');
 const { readPark, writePark, createPhotosDirectory } = require('../utils/fileSystem');
 
 // Configurar almacenamiento de multer
@@ -48,8 +49,8 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-// POST /api/photos/:parkId/main - Subir foto principal
-router.post('/:parkId/main', upload.single('photo'), async (req, res) => {
+// POST /api/photos/:parkId/main - Subir foto principal (requiere autenticación)
+router.post('/:parkId/main', authenticate, upload.single('photo'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No se ha subido ninguna foto' });
@@ -80,8 +81,8 @@ router.post('/:parkId/main', upload.single('photo'), async (req, res) => {
   }
 });
 
-// POST /api/photos/:parkId/gallery - Añadir foto a la galería
-router.post('/:parkId/gallery', upload.single('photo'), async (req, res) => {
+// POST /api/photos/:parkId/gallery - Añadir foto a la galería (requiere autenticación)
+router.post('/:parkId/gallery', authenticate, upload.single('photo'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No se ha subido ninguna foto' });
@@ -109,8 +110,8 @@ router.post('/:parkId/gallery', upload.single('photo'), async (req, res) => {
   }
 });
 
-// DELETE /api/photos/:parkId/gallery/:filename - Eliminar foto de la galería
-router.delete('/:parkId/gallery/:filename', async (req, res) => {
+// DELETE /api/photos/:parkId/gallery/:filename - Eliminar foto de la galería (requiere autenticación)
+router.delete('/:parkId/gallery/:filename', authenticate, async (req, res) => {
   try {
     const park = await readPark(req.params.parkId);
 

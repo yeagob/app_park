@@ -6,6 +6,10 @@ yarn.lock
 # Data (JSON files y fotos)
 backend/data/
 
+# Test coverage
+backend/coverage/
+frontend/coverage/
+
 # Environment variables
 .env
 .env.local

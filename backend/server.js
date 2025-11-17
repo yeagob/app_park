@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs').promises;
+const authRouter = require('./routes/auth');
 const parksRouter = require('./routes/parks');
 const photosRouter = require('./routes/photos');
 const commentsRouter = require('./routes/comments');
@@ -18,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/photos', express.static(path.join(__dirname, 'data/photos')));
 
 // Routes
+app.use('/api/auth', authRouter);
 app.use('/api/parks', parksRouter);
 app.use('/api/photos', photosRouter);
 app.use('/api/comments', commentsRouter);

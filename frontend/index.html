@@ -15,7 +15,9 @@
             <div class="header-content">
                 <h1 class="logo">🌳 Parks Social</h1>
                 <nav class="nav">
+                    <span id="userEmail" style="margin-right: 1rem; color: var(--gray);"></span>
                     <button class="btn btn-primary" onclick="app.showAddParkModal()">+ Añadir Parque</button>
+                    <button class="btn btn-secondary" onclick="app.logout()" id="logoutBtn" style="display: none;">Salir</button>
                 </nav>
             </div>
         </div>
@@ -203,6 +205,37 @@
                     <button type="button" class="btn btn-secondary" onclick="app.closeModal('addParkModal')">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Añadir Parque</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Login -->
+    <div id="loginModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 style="text-align: center; margin-bottom: 1.5rem;">🌳 Bienvenido a Parks Social</h2>
+            <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;">
+                Ingresa tu email para comenzar a explorar y añadir parques
+            </p>
+            <form id="loginForm" onsubmit="app.handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        placeholder="tu@email.com"
+                        required
+                        autofocus
+                        style="font-size: 1rem; padding: 0.8rem;"
+                    >
+                </div>
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        Ingresar
+                    </button>
+                </div>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--gray);">
+                    No necesitas contraseña. Solo tu email.
+                </p>
             </form>
         </div>
     </div>

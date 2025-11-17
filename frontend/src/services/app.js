@@ -7,10 +7,75 @@ const app = {
 
     async init() {
         console.log('🌳 Iniciando Parks Social Network...');
+
+        // Verificar autenticación
+        if (!api.auth.isAuthenticated()) {
+            this.showLoginModal();
+            return;
+        }
+
+        // Verificar token válido
+        const isValid = await api.verifyToken();
+        if (!isValid) {
+            this.showLoginModal();
+            return;
+        }
+
+        // Mostrar info del usuario
+        this.updateUserInfo();
+
+        // Cargar parques
         await this.loadParks();
 
         // Intentar obtener ubicación del usuario automáticamente
         this.tryGetUserLocation();
+    },
+
+    showLoginModal() {
+        document.getElementById('loginModal').style.display = 'block';
+    },
+
+    hideLoginModal() {
+        document.getElementById('loginModal').style.display = 'none';
+    },
+
+    updateUserInfo() {
+        const user = api.auth.getUser();
+        if (user) {
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+        }
+    },
+
+    async handleLogin(event) {
+        event.preventDefault();
+        const form = event.target;
+        const email = form.email.value;
+
+        try {
+            await api.login(email);
+            this.hideLoginModal();
+            this.updateUserInfo();
+            await this.loadParks();
+            this.tryGetUserLocation();
+        } catch (error) {
+            alert('Error al iniciar sesión: ' + error.message);
+        }
+    },
+
+    logout() {
+        if (confirm('¿Seguro que quieres cerrar sesión?')) {
+            api.logout();
+        }
+    },
+
+    checkAuth() {
+        if (!api.auth.isAuthenticated()) {
+            alert('Debes iniciar sesión para realizar esta acción');
+            this.showLoginModal();
+            return false;
+        }
+        return true;
     },
 
     async loadParks(filters = {}) {
@@ -34,7 +99,9 @@ const app = {
         if (parks.length === 0) {
             container.innerHTML = `
                 <div class="loading">
-                    No se encontraron parques con los filtros seleccionados
+                    ${api.auth.isAuthenticated()
+                        ? 'No hay parques aún. ¡Sé el primero en añadir uno!'
+                        : 'No se encontraron parques'}
                 </div>
             `;
             return;
@@ -210,6 +277,8 @@ const app = {
     },
 
     showAddParkModal() {
+        if (!this.checkAuth()) return;
+
         const modal = document.getElementById('addParkModal');
         modal.style.display = 'block';
 
@@ -222,6 +291,9 @@ const app = {
 
     async submitPark(event) {
         event.preventDefault();
+
+        if (!this.checkAuth()) return;
+
         const form = event.target;
         const formData = new FormData(form);
 
@@ -244,8 +316,7 @@ const app = {
                 skating_allowed: false
             },
             surface: formData.get('surface'),
-            condition: formData.get('condition'),
-            created_by: 'user' // En una app real, esto vendría del sistema de autenticación
+            condition: formData.get('condition')
         };
 
         // Procesar elementos
@@ -268,12 +339,15 @@ const app = {
             await this.loadParks(this.currentFilters);
         } catch (error) {
             console.error('Error creating park:', error);
-            alert('Error al añadir el parque. Por favor, inténtalo de nuevo.');
+            alert('Error al añadir el parque: ' + error.message);
         }
     },
 
     async submitComment(event, parkId) {
         event.preventDefault();
+
+        if (!this.checkAuth()) return;
+
         const form = event.target;
         const formData = new FormData(form);
 
@@ -289,21 +363,25 @@ const app = {
             await renderParkDetail(parkId);
         } catch (error) {
             console.error('Error adding comment:', error);
-            alert('Error al añadir comentario');
+            alert('Error al añadir comentario: ' + error.message);
         }
     },
 
     async likeComment(parkId, commentId) {
+        if (!this.checkAuth()) return;
+
         try {
             await api.likeComment(parkId, commentId);
             await renderParkDetail(parkId);
         } catch (error) {
             console.error('Error liking comment:', error);
-            alert('Error al dar me gusta');
+            alert('Error al dar me gusta: ' + error.message);
         }
     },
 
     async ratePark(parkId, rating) {
+        if (!this.checkAuth()) return;
+
         try {
             await api.ratePark(parkId, rating);
             alert(`Has valorado este parque con ${rating} estrellas`);
@@ -311,7 +389,7 @@ const app = {
             await this.loadParks(this.currentFilters);
         } catch (error) {
             console.error('Error rating park:', error);
-            alert('Error al valorar el parque');
+            alert('Error al valorar el parque: ' + error.message);
         }
     }
 };

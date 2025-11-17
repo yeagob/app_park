@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { authenticate, optionalAuth } = require('../middleware/authMiddleware');
 const {
   readIndex,
   writeIndex,
@@ -122,8 +123,8 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/parks - Crear un nuevo parque
-router.post('/', async (req, res) => {
+// POST /api/parks - Crear un nuevo parque (requiere autenticación)
+router.post('/', authenticate, async (req, res) => {
   try {
     const parkId = await generateParkId();
     const newPark = {
@@ -148,7 +149,7 @@ router.post('/', async (req, res) => {
       age_range: req.body.age_range || '0-12',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      created_by: req.body.created_by || 'anonymous'
+      created_by: req.user.email
     };
 
     // Guardar parque
@@ -167,8 +168,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// PUT /api/parks/:id - Actualizar un parque
-router.put('/:id', async (req, res) => {
+// PUT /api/parks/:id - Actualizar un parque (requiere autenticación)
+router.put('/:id', authenticate, async (req, res) => {
   try {
     const existingPark = await readPark(req.params.id);
 
@@ -188,8 +189,8 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE /api/parks/:id - Eliminar un parque
-router.delete('/:id', async (req, res) => {
+// DELETE /api/parks/:id - Eliminar un parque (requiere autenticación)
+router.delete('/:id', authenticate, async (req, res) => {
   try {
     await deletePark(req.params.id);
 
@@ -205,8 +206,8 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST /api/parks/:id/rate - Añadir valoración a un parque
-router.post('/:id/rate', async (req, res) => {
+// POST /api/parks/:id/rate - Añadir valoración a un parque (requiere autenticación)
+router.post('/:id/rate', authenticate, async (req, res) => {
   try {
     const park = await readPark(req.params.id);
     const newRating = parseFloat(req.body.rating);

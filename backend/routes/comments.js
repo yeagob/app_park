@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
+const { authenticate } = require('../middleware/authMiddleware');
 const { readComments, writeComments } = require('../utils/fileSystem');
 
 // GET /api/comments/:parkId - Obtener todos los comentarios de un parque
@@ -24,8 +25,8 @@ router.get('/:parkId', async (req, res) => {
   }
 });
 
-// POST /api/comments/:parkId - Añadir un comentario
-router.post('/:parkId', async (req, res) => {
+// POST /api/comments/:parkId - Añadir un comentario (requiere autenticación)
+router.post('/:parkId', authenticate, async (req, res) => {
   try {
     const { author, text, rating } = req.body;
 
@@ -55,8 +56,8 @@ router.post('/:parkId', async (req, res) => {
   }
 });
 
-// PUT /api/comments/:parkId/:commentId - Editar un comentario
-router.put('/:parkId/:commentId', async (req, res) => {
+// PUT /api/comments/:parkId/:commentId - Editar un comentario (requiere autenticación)
+router.put('/:parkId/:commentId', authenticate, async (req, res) => {
   try {
     const commentsData = await readComments(req.params.parkId);
     const commentIndex = commentsData.comments.findIndex(c => c.id === req.params.commentId);
@@ -86,8 +87,8 @@ router.put('/:parkId/:commentId', async (req, res) => {
   }
 });
 
-// DELETE /api/comments/:parkId/:commentId - Eliminar un comentario
-router.delete('/:parkId/:commentId', async (req, res) => {
+// DELETE /api/comments/:parkId/:commentId - Eliminar un comentario (requiere autenticación)
+router.delete('/:parkId/:commentId', authenticate, async (req, res) => {
   try {
     const commentsData = await readComments(req.params.parkId);
     const commentIndex = commentsData.comments.findIndex(c => c.id === req.params.commentId);
@@ -106,8 +107,8 @@ router.delete('/:parkId/:commentId', async (req, res) => {
   }
 });
 
-// POST /api/comments/:parkId/:commentId/like - Dar "me gusta" a un comentario
-router.post('/:parkId/:commentId/like', async (req, res) => {
+// POST /api/comments/:parkId/:commentId/like - Dar "me gusta" a un comentario (requiere autenticación)
+router.post('/:parkId/:commentId/like', authenticate, async (req, res) => {
   try {
     const commentsData = await readComments(req.params.parkId);
     const commentIndex = commentsData.comments.findIndex(c => c.id === req.params.commentId);
@@ -126,8 +127,8 @@ router.post('/:parkId/:commentId/like', async (req, res) => {
   }
 });
 
-// POST /api/comments/:parkId/:commentId/unlike - Quitar "me gusta" de un comentario
-router.post('/:parkId/:commentId/unlike', async (req, res) => {
+// POST /api/comments/:parkId/:commentId/unlike - Quitar "me gusta" de un comentario (requiere autenticación)
+router.post('/:parkId/:commentId/unlike', authenticate, async (req, res) => {
   try {
     const commentsData = await readComments(req.params.parkId);
     const commentIndex = commentsData.comments.findIndex(c => c.id === req.params.commentId);
