@@ -131,6 +131,7 @@ router.post('/', authenticate, async (req, res) => {
       id: parkId,
       name: req.body.name,
       location: req.body.location,
+      description: req.body.description || '',
       hours: req.body.hours || { always_open: true, schedule: '24/7' },
       rating: {
         average: 0,
@@ -141,6 +142,7 @@ router.post('/', authenticate, async (req, res) => {
         gallery: []
       },
       elements: req.body.elements || {},
+      custom_elements: req.body.custom_elements || [],
       amenities: req.body.amenities || {},
       policies: req.body.policies || {},
       surface: req.body.surface || 'unknown',

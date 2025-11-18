@@ -282,11 +282,21 @@ const app = {
         const modal = document.getElementById('addParkModal');
         modal.style.display = 'block';
 
-        // Pre-rellenar coordenadas si hay ubicación del usuario
-        if (this.userLocation) {
-            document.querySelector('input[name="lat"]').value = this.userLocation.lat;
-            document.querySelector('input[name="lng"]').value = this.userLocation.lng;
+        // Limpiar coordenadas para permitir entrada manual
+        document.querySelector('input[name="lat"]').value = '';
+        document.querySelector('input[name="lng"]').value = '';
+    },
+
+    useCurrentLocation() {
+        if (!this.userLocation) {
+            alert('No se pudo obtener tu ubicación. Por favor, permite el acceso a la ubicación en tu navegador.');
+            this.getCurrentLocation();
+            return;
         }
+
+        // Rellenar coordenadas con ubicación del usuario
+        document.querySelector('input[name="lat"]').value = this.userLocation.lat;
+        document.querySelector('input[name="lng"]').value = this.userLocation.lng;
     },
 
     async submitPark(event) {
@@ -300,6 +310,7 @@ const app = {
         // Construir objeto de parque
         const parkData = {
             name: formData.get('name'),
+            description: formData.get('description') || '',
             location: {
                 address: formData.get('address'),
                 coordinates: {
@@ -330,6 +341,17 @@ const app = {
         ['water_fountain', 'restrooms', 'parking', 'wheelchair_accessible', 'fenced', 'nearby_cafe', 'cafe_with_playground_view', 'nearby_supermarket'].forEach(am => {
             parkData.amenities[am] = amenities.includes(am);
         });
+
+        // Procesar elementos personalizados
+        const customElementsText = formData.get('custom_elements') || '';
+        if (customElementsText.trim()) {
+            parkData.custom_elements = customElementsText
+                .split(',')
+                .map(el => el.trim())
+                .filter(el => el.length > 0);
+        } else {
+            parkData.custom_elements = [];
+        }
 
         try {
             const newPark = await api.createPark(parkData);

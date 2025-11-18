@@ -162,6 +162,15 @@
                             <input type="number" name="lng" step="0.000001" required>
                         </div>
                     </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-secondary" onclick="app.useCurrentLocation()" style="width: 100%;">
+                            📍 <span data-i18n="useCurrentLocation">Usar mi ubicación actual</span>
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <label><span data-i18n="description">Descripción y comentarios</span></label>
+                        <textarea name="description" rows="4" placeholder="Añade una descripción del parque, comentarios sobre qué lo hace especial, consejos para visitantes, etc." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; resize: vertical;"></textarea>
+                    </div>
                 </div>
 
                 <div class="form-section">
@@ -172,10 +181,18 @@
                         <label><input type="checkbox" name="elements" value="sandbox"> <span data-i18n="sandbox">Arenero</span></label>
                         <label><input type="checkbox" name="elements" value="water_play"> <span data-i18n="waterPlay">Zona de agua</span></label>
                         <label><input type="checkbox" name="elements" value="climbing_structure"> <span data-i18n="climbingStructure">Estructura de escalada</span></label>
-                        <label><input type="checkbox" name="elements" value="zipline"> <span data-i18n="zipline">Tirolina</span></label>
+                        <label><input type="checkbox" name="elements" value="zipline"> <span data-i18n="tirolina">Tirolina</span></label>
                         <label><input type="checkbox" name="elements" value="seesaw"> <span data-i18n="seesaw">Balancines</span></label>
                         <label><input type="checkbox" name="elements" value="baby_area"> <span data-i18n="babyArea">Zona bebés</span></label>
                         <label><input type="checkbox" name="elements" value="picnic_tables"> <span data-i18n="picnicTables">Mesas picnic</span></label>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label><span data-i18n="customElements">Elementos personalizados</span></label>
+                        <p style="font-size: 0.9rem; color: var(--gray); margin: 0.25rem 0;">
+                            <span data-i18n="customElementsHelp">Añade elementos personalizados separados por comas (ej: "Rocódromo, Pista de skate, Cancha de baloncesto")</span>
+                        </p>
+                        <textarea name="custom_elements" rows="2" placeholder="Rocódromo, Pista de skate, Cancha de baloncesto..." style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; resize: vertical;"></textarea>
                     </div>
                 </div>
 
