@@ -2,7 +2,19 @@
 
 Red social de parques infantiles que permite a las familias descubrir, compartir y evaluar parques en todo el mundo.
 
+**🌍 Soporta Español e Inglés** | **🔐 Autenticación por Email** | **✅ 30 Tests Automatizados**
+
 ## 📋 Características Principales
+
+### 🔐 Autenticación Simple
+- **Login por email**: Acceso rápido sin contraseña
+- **Sistema de tokens**: Autenticación segura con JWT-like tokens
+- **Protección de rutas**: Solo usuarios autenticados pueden añadir/modificar contenido
+
+### 🌍 Internacionalización (i18n)
+- **Español e Inglés**: Interfaz completamente traducida
+- **Cambio de idioma**: Selector de idioma en tiempo real
+- **Detección automática**: Detecta el idioma del navegador
 
 ### 🔍 Descubrimiento de Parques
 - **Geolocalización**: Encuentra parques cercanos usando tu ubicación GPS
@@ -13,6 +25,7 @@ Red social de parques infantiles que permite a las familias descubrir, compartir
 ### 📝 Información Detallada
 - Elementos del parque (columpios, toboganes, arenero, tirolina, etc.)
 - Servicios (baños, parking, fuente de agua, accesibilidad)
+- **Bares/Cafés**: Bar cerca, bar con vista a los niños jugando
 - Condiciones (superficie, estado, drenaje, exposición al sol)
 - Políticas (perros permitidos, zona de patinaje)
 - Horarios de apertura
@@ -74,36 +87,129 @@ cd backend
 npm install
 ```
 
-### 3. Crear Datos de Ejemplo
+### 3. Iniciar el Backend
 ```bash
-node seed.js
-```
-
-Esto creará 5 parques de ejemplo en Madrid con comentarios.
-
-### 4. Iniciar el Backend
-```bash
+# Modo producción
 npm start
-# o para desarrollo con auto-reload:
+
+# Modo desarrollo (con auto-reload usando nodemon)
 npm run dev
 ```
 
 El backend se ejecutará en `http://localhost:3001`
 
-### 5. Instalar Dependencias del Frontend
+### 4. Instalar Dependencias del Frontend
 ```bash
 cd ../frontend
 npm install
 ```
 
-### 6. Iniciar el Frontend
+### 5. Iniciar el Frontend
 ```bash
+# Abre automáticamente el navegador
 npm start
+
+# Modo desarrollo (sin abrir navegador)
+npm run dev
 ```
 
-El frontend se abrirá automáticamente en `http://localhost:3000`
+El frontend se ejecutará en `http://localhost:3000`
+
+### 6. Primer Acceso
+Al abrir la aplicación por primera vez, verás el modal de login. Ingresa tu email para comenzar. El sistema:
+- Genera automáticamente un token de autenticación
+- No requiere contraseña
+- Guarda tu sesión en localStorage
+- La base de datos inicia vacía - ¡sé el primero en añadir un parque!
+
+## 🧪 Testing
+
+### Ejecutar Tests
+```bash
+cd backend
+npm test
+```
+
+El proyecto incluye **30 tests automatizados** que cubren:
+- ✅ Autenticación (login, verificación de tokens)
+- ✅ CRUD de parques (crear, leer, actualizar, eliminar)
+- ✅ Sistema de valoraciones
+- ✅ Comentarios y "me gusta"
+- ✅ Búsqueda por geolocalización
+- ✅ Filtros avanzados
+- ✅ Validación de datos
+
+**Cobertura de código:** ~66% (statements, branches, functions, lines)
+
+### Modo Watch (desarrollo)
+```bash
+npm run test:watch
+```
 
 ## 📡 API Endpoints
+
+### 🔐 Autenticación
+
+#### POST `/api/auth/login`
+Inicia sesión o registra un nuevo usuario con solo un email.
+
+**Body:**
+```json
+{
+  "email": "usuario@example.com"
+}
+```
+
+**Response:**
+```json
+{
+  "user": {
+    "id": "uuid",
+    "email": "usuario@example.com",
+    "token": "generated-token"
+  }
+}
+```
+
+#### POST `/api/auth/verify`
+Verifica si un token es válido.
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "valid": true,
+  "user": {
+    "id": "uuid",
+    "email": "usuario@example.com"
+  }
+}
+```
+
+#### POST `/api/auth/logout`
+Invalida el token actual (cierra sesión).
+
+**Headers:**
+```
+Authorization: Bearer <token>
+```
+
+---
+
+**🔒 Rutas Protegidas:** Las siguientes operaciones requieren autenticación (header `Authorization: Bearer <token>`):
+- POST `/api/parks` - Crear parque
+- PUT `/api/parks/:id` - Actualizar parque
+- DELETE `/api/parks/:id` - Eliminar parque
+- POST `/api/parks/:id/rate` - Valorar parque
+- POST `/api/comments/:parkId` - Añadir comentario
+- PUT/DELETE comentarios
+- POST like/unlike comentarios
+
+---
 
 ### Parques
 
@@ -150,7 +256,8 @@ Crea un nuevo parque.
   },
   "amenities": {
     "water_fountain": true,
-    "restrooms": true
+    "restrooms": true,
+    "cafe_with_playground_view": true
   },
   "policies": {
     "dogs_allowed": true
@@ -294,8 +401,11 @@ Formulario completo con:
 - **Express** - Framework web
 - **Multer** - Subida de archivos
 - **Geolib** - Cálculos geográficos
-- **UUID** - Generación de IDs únicos
+- **UUID** - Generación de IDs únicos y tokens
 - **CORS** - Cross-Origin Resource Sharing
+- **Jest** - Framework de testing
+- **Supertest** - Testing de APIs HTTP
+- **Nodemon** - Auto-reload en desarrollo
 
 ### Frontend
 - **HTML5** - Estructura
@@ -303,6 +413,8 @@ Formulario completo con:
 - **JavaScript ES6+** - Lógica de aplicación
 - **Leaflet** - Mapas interactivos
 - **Fetch API** - Peticiones HTTP
+- **i18n personalizado** - Sistema de internacionalización (ES/EN)
+- **LocalStorage API** - Persistencia de sesión y preferencias
 
 ## 📱 Diseño Responsive
 
@@ -322,39 +434,46 @@ Características responsive:
 
 Este es un MVP (Minimum Viable Product) con algunas limitaciones:
 
-1. **Sin autenticación**: No hay sistema de usuarios/login
-2. **Sin base de datos**: Todo se almacena en archivos JSON
-3. **Fotos no persistentes**: Las fotos se pierden si se reinicia con seed.js
-4. **Sin validación de coordenadas**: No verifica que las coordenadas sean válidas
-5. **Sin edición de parques**: Solo se pueden crear, no editar (la API lo soporta)
-6. **Sin favoritos**: No se pueden marcar parques como favoritos
-7. **Sin notificaciones**: No hay sistema de notificaciones
-8. **Sin moderación**: No hay sistema de moderación de contenidos
+1. **Almacenamiento en archivos**: Todo se almacena en archivos JSON (no base de datos)
+2. **Autenticación básica**: Solo email sin contraseña (adecuado para MVP)
+3. **Sin validación de coordenadas**: No verifica que las coordenadas sean válidas
+4. **Sin edición de parques desde UI**: Solo se pueden crear (la API soporta PUT)
+5. **Sin favoritos**: No se pueden marcar parques como favoritos
+6. **Sin notificaciones**: No hay sistema de notificaciones
+7. **Sin moderación**: No hay sistema de moderación de contenidos
+8. **Sin recuperación de cuenta**: Si pierdes tu token, pierdes acceso a tu cuenta
 
 ## 🔮 Futuras Mejoras
 
 ### Corto Plazo
-- [ ] Sistema de autenticación (JWT)
-- [ ] Edición de parques existentes
+- [x] ~~Sistema de autenticación~~ ✅ **Completado**
+- [x] ~~Internacionalización (ES/EN)~~ ✅ **Completado**
+- [x] ~~Testing automatizado~~ ✅ **Completado**
+- [ ] Edición de parques existentes desde UI
 - [ ] Sistema de favoritos
 - [ ] Compartir parques en redes sociales
-- [ ] Más opciones de ordenamiento
+- [ ] Subida de fotos desde la interfaz
+- [ ] Recuperación de contraseña/token por email
 
 ### Medio Plazo
 - [ ] Base de datos real (MongoDB/PostgreSQL)
 - [ ] Sistema de reportes/moderación
-- [ ] Notificaciones
-- [ ] Perfil de usuario
+- [ ] Notificaciones push
+- [ ] Perfil de usuario completo con avatar
 - [ ] Historial de parques visitados
 - [ ] Rutas sugeridas con múltiples parques
+- [ ] Tests de frontend (Jest + Testing Library)
+- [ ] Más idiomas (Francés, Alemán, Portugués)
 
 ### Largo Plazo
-- [ ] App móvil nativa (React Native)
-- [ ] Verificación de parques
+- [ ] App móvil nativa (React Native/Flutter)
+- [ ] Verificación de parques por moderadores
 - [ ] Sistema de badges/gamificación
-- [ ] Eventos en parques
+- [ ] Eventos en parques (meetups, actividades)
 - [ ] Chat entre usuarios
 - [ ] Integración con APIs de clima
+- [ ] Recomendaciones personalizadas con IA
+- [ ] Accesibilidad mejorada (WCAG AAA)
 
 ## 📄 Licencia
 

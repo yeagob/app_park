@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "Frontend para red social de parques",
   "scripts": {
-    "start": "npx http-server . -p 3000 -o"
+    "start": "npx http-server . -p 3000 -o",
+    "dev": "npx http-server . -p 3000"
   },
   "keywords": ["parks", "social-network"],
   "author": "",
