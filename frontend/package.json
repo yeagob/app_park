@@ -1,0 +1,15 @@
+{
+  "name": "parks-social-network-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para red social de parques",
+  "scripts": {
+    "start": "npx http-server . -p 3000 -o",
+    "dev": "npx http-server . -p 3000"
+  },
+  "keywords": ["parks", "social-network"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

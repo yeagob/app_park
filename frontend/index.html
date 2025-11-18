@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="es" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parks Social - Red Social de Parques</title>
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <h1 class="logo">🌳 <span data-i18n="appName">Parks Social</span></h1>
+                <nav class="nav" style="display: flex; align-items: center; gap: 1rem;">
+                    <!-- Language Selector -->
+                    <select id="languageSelector" onchange="i18n.setLanguage(this.value)" style="padding: 0.4rem; border-radius: 4px; border: 1px solid var(--border); background: white;">
+                        <option value="es">🇪🇸 ES</option>
+                        <option value="en">🇬🇧 EN</option>
+                    </select>
+
+                    <span id="userEmail" style="color: var(--gray);"></span>
+                    <button class="btn btn-primary" onclick="app.showAddParkModal()">
+                        + <span data-i18n="addPark">Añadir Parque</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="app.logout()" id="logoutBtn" style="display: none;">
+                        <span data-i18n="logout">Salir</span>
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <!-- Search and Filters -->
+            <div class="search-section">
+                <div class="search-bar">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        class="search-input"
+                        data-i18n-placeholder="searchPlaceholder"
+                        placeholder="Buscar parques por nombre o ubicación..."
+                        onkeyup="app.handleSearch()"
+                    >
+                    <button class="btn btn-icon" onclick="app.getCurrentLocation()">
+                        📍 <span data-i18n="nearMe">Cerca de mí</span>
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters">
+                    <button class="filter-toggle" onclick="app.toggleFilters()">
+                        🔍 <span data-i18n="advancedFilters">Filtros avanzados</span>
+                    </button>
+                    <div class="filter-panel" id="filterPanel" style="display: none;">
+                        <div class="filter-group">
+                            <h4 data-i18n="elements">Elementos</h4>
+                            <label><input type="checkbox" value="swings" onchange="app.applyFilters()"> <span data-i18n="swings">Columpios</span></label>
+                            <label><input type="checkbox" value="slides" onchange="app.applyFilters()"> <span data-i18n="slides">Toboganes</span></label>
+                            <label><input type="checkbox" value="sandbox" onchange="app.applyFilters()"> <span data-i18n="sandbox">Arenero</span></label>
+                            <label><input type="checkbox" value="water_play" onchange="app.applyFilters()"> <span data-i18n="waterPlay">Zona de agua</span></label>
+                            <label><input type="checkbox" value="zipline" onchange="app.applyFilters()"> <span data-i18n="zipline">Tirolina</span></label>
+                            <label><input type="checkbox" value="baby_area" onchange="app.applyFilters()"> <span data-i18n="babyArea">Zona bebés</span></label>
+                        </div>
+                        <div class="filter-group">
+                            <h4 data-i18n="services">Servicios</h4>
+                            <label><input type="checkbox" value="water_fountain" onchange="app.applyFilters()"> <span data-i18n="waterFountain">Fuente de agua</span></label>
+                            <label><input type="checkbox" value="restrooms" onchange="app.applyFilters()"> <span data-i18n="restrooms">Baños</span></label>
+                            <label><input type="checkbox" value="parking" onchange="app.applyFilters()"> <span data-i18n="parking">Parking</span></label>
+                            <label><input type="checkbox" value="wheelchair_accessible" onchange="app.applyFilters()"> <span data-i18n="wheelchairAccessible">Accesible</span></label>
+                            <label><input type="checkbox" value="fenced" onchange="app.applyFilters()"> <span data-i18n="fenced">Vallado</span></label>
+                            <label><input type="checkbox" value="nearby_cafe" onchange="app.applyFilters()"> <span data-i18n="nearbyCafe">Bar cerca</span></label>
+                            <label><input type="checkbox" value="cafe_with_playground_view" onchange="app.applyFilters()"> <span data-i18n="cafeWithView">Bar con vista a los niños</span></label>
+                        </div>
+                        <div class="filter-group">
+                            <h4 data-i18n="policies">Políticas</h4>
+                            <label><input type="checkbox" id="dogsAllowed" onchange="app.applyFilters()"> <span data-i18n="dogsAllowed">Perros permitidos</span></label>
+                        </div>
+                        <div class="filter-group">
+                            <h4 data-i18n="minRating">Valoración mínima</h4>
+                            <select id="minRating" onchange="app.applyFilters()">
+                                <option value="0" data-i18n="all">Todas</option>
+                                <option value="3">⭐ 3+</option>
+                                <option value="4">⭐ 4+</option>
+                                <option value="4.5">⭐ 4.5+</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="view-toggle">
+                <button class="btn-toggle active" data-view="list" onclick="app.switchView('list')">
+                    📋 <span data-i18n="listView">Lista</span>
+                </button>
+                <button class="btn-toggle" data-view="map" onclick="app.switchView('map')">
+                    🗺️ <span data-i18n="mapView">Mapa</span>
+                </button>
+            </div>
+
+            <!-- List View -->
+            <div id="listView" class="list-view">
+                <div id="parksList" class="parks-grid">
+                    <div class="loading" data-i18n="loading">Cargando parques...</div>
+                </div>
+            </div>
+
+            <!-- Map View -->
+            <div id="mapView" class="map-view" style="display: none;">
+                <div id="map" class="map-container"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Park Detail -->
+    <div id="parkDetailModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="app.closeModal('parkDetailModal')">&times;</span>
+            <div id="parkDetailContent"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Add Park -->
+    <div id="addParkModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="app.closeModal('addParkModal')">&times;</span>
+            <h2 data-i18n="addNewPark">Añadir Nuevo Parque</h2>
+            <form id="addParkForm" onsubmit="app.submitPark(event)">
+                <div class="form-section">
+                    <h3 data-i18n="basicInfo">Información Básica</h3>
+                    <div class="form-group">
+                        <label><span data-i18n="parkName">Nombre del Parque</span> *</label>
+                        <input type="text" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label><span data-i18n="address">Dirección</span> *</label>
+                        <input type="text" name="address" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><span data-i18n="city">Ciudad</span> *</label>
+                            <input type="text" name="city" required>
+                        </div>
+                        <div class="form-group">
+                            <label><span data-i18n="country">País</span> *</label>
+                            <input type="text" name="country" value="España" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label><span data-i18n="latitude">Latitud</span> *</label>
+                            <input type="number" name="lat" step="0.000001" required>
+                        </div>
+                        <div class="form-group">
+                            <label><span data-i18n="longitude">Longitud</span> *</label>
+                            <input type="number" name="lng" step="0.000001" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 data-i18n="parkElements">Elementos del Parque</h3>
+                    <div class="checkbox-grid">
+                        <label><input type="checkbox" name="elements" value="swings"> <span data-i18n="swings">Columpios</span></label>
+                        <label><input type="checkbox" name="elements" value="slides"> <span data-i18n="slides">Toboganes</span></label>
+                        <label><input type="checkbox" name="elements" value="sandbox"> <span data-i18n="sandbox">Arenero</span></label>
+                        <label><input type="checkbox" name="elements" value="water_play"> <span data-i18n="waterPlay">Zona de agua</span></label>
+                        <label><input type="checkbox" name="elements" value="climbing_structure"> <span data-i18n="climbingStructure">Estructura de escalada</span></label>
+                        <label><input type="checkbox" name="elements" value="zipline"> <span data-i18n="zipline">Tirolina</span></label>
+                        <label><input type="checkbox" name="elements" value="seesaw"> <span data-i18n="seesaw">Balancines</span></label>
+                        <label><input type="checkbox" name="elements" value="baby_area"> <span data-i18n="babyArea">Zona bebés</span></label>
+                        <label><input type="checkbox" name="elements" value="picnic_tables"> <span data-i18n="picnicTables">Mesas picnic</span></label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 data-i18n="servicesAndAmenities">Servicios y Comodidades</h3>
+                    <div class="checkbox-grid">
+                        <label><input type="checkbox" name="amenities" value="water_fountain"> <span data-i18n="waterFountain">Fuente de agua</span></label>
+                        <label><input type="checkbox" name="amenities" value="restrooms"> <span data-i18n="restrooms">Baños</span></label>
+                        <label><input type="checkbox" name="amenities" value="parking"> <span data-i18n="parking">Parking</span></label>
+                        <label><input type="checkbox" name="amenities" value="wheelchair_accessible"> <span data-i18n="wheelchairAccessible">Accesible</span></label>
+                        <label><input type="checkbox" name="amenities" value="fenced"> <span data-i18n="fenced">Vallado</span></label>
+                        <label><input type="checkbox" name="amenities" value="nearby_cafe"> <span data-i18n="nearbyCafe">Bar cerca</span></label>
+                        <label><input type="checkbox" name="amenities" value="cafe_with_playground_view"> <span data-i18n="cafeWithView">Bar con vista a los niños</span></label>
+                        <label><input type="checkbox" name="amenities" value="nearby_supermarket"> <span data-i18n="nearbySupermarket">Supermercado cerca</span></label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 data-i18n="additionalInformation">Información Adicional</h3>
+                    <div class="form-group">
+                        <label data-i18n="surfaceType">Tipo de superficie</label>
+                        <select name="surface">
+                            <option value="rubber" data-i18n="rubber">Caucho</option>
+                            <option value="sand" data-i18n="sand">Arena</option>
+                            <option value="grass" data-i18n="grass">Césped</option>
+                            <option value="mixed" data-i18n="mixed">Mixto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="parkCondition">Condición</label>
+                        <select name="condition">
+                            <option value="excellent" data-i18n="excellent">Excelente</option>
+                            <option value="good" data-i18n="good">Buena</option>
+                            <option value="fair" data-i18n="fair">Regular</option>
+                            <option value="needs_maintenance" data-i18n="needsMaintenance">Necesita mantenimiento</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><input type="checkbox" name="dogs_allowed"> <span data-i18n="dogsAllowed">Perros permitidos</span></label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="app.closeModal('addParkModal')">
+                        <span data-i18n="cancel">Cancelar</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <span data-i18n="addParkButton">Añadir Parque</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Login -->
+    <div id="loginModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px;">
+            <h2 style="text-align: center; margin-bottom: 1.5rem;">🌳 <span data-i18n="welcome">Bienvenido a Parks Social</span></h2>
+            <p style="text-align: center; color: var(--gray); margin-bottom: 2rem;" data-i18n="loginSubtitle">
+                Ingresa tu email para comenzar a explorar y añadir parques
+            </p>
+            <form id="loginForm" onsubmit="app.handleLogin(event)">
+                <div class="form-group">
+                    <label data-i18n="email">Email</label>
+                    <input
+                        type="email"
+                        name="email"
+                        data-i18n-placeholder="emailPlaceholder"
+                        placeholder="tu@email.com"
+                        required
+                        autofocus
+                        style="font-size: 1rem; padding: 0.8rem;"
+                    >
+                </div>
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <span data-i18n="enter">Ingresar</span>
+                    </button>
+                </div>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--gray);" data-i18n="noPasswordNeeded">
+                    No necesitas contraseña. Solo tu email.
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/services/i18n.js"></script>
+    <script src="src/services/api.js"></script>
+    <script src="src/components/parkCard.js"></script>
+    <script src="src/components/parkDetail.js"></script>
+    <script src="src/pages/map.js"></script>
+    <script src="src/services/app.js"></script>
+
+    <!-- Initialize language selector -->
+    <script>
+        document.getElementById('languageSelector').value = i18n.getLanguage();
+        document.getElementById('htmlRoot').lang = i18n.getLanguage();
+
+        // Translate all elements with data-i18n attribute
+        function translatePage() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = i18n.t(key);
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                el.placeholder = i18n.t(key);
+            });
+        }
+
+        translatePage();
+    </script>
+</body>
+</html>
