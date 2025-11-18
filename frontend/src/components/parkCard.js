@@ -6,13 +6,14 @@ function createParkCard(park) {
 
     // Obtener las características destacadas
     const features = [];
-    if (park.elements.swings) features.push('🎠 Columpios');
-    if (park.elements.slides) features.push('🛝 Toboganes');
-    if (park.elements.sandbox) features.push('🏖️ Arenero');
-    if (park.elements.water_play) features.push('💧 Agua');
-    if (park.elements.zipline) features.push('🎢 Tirolina');
-    if (park.amenities.restrooms) features.push('🚻 Baños');
-    if (park.amenities.parking) features.push('🅿️ Parking');
+    if (park.elements.swings) features.push('🎠 ' + i18n.t('swings'));
+    if (park.elements.slides) features.push('🛝 ' + i18n.t('slides'));
+    if (park.elements.sandbox) features.push('🏖️ ' + i18n.t('sandbox'));
+    if (park.elements.water_play) features.push('💧 ' + i18n.t('waterPlay'));
+    if (park.elements.zipline) features.push('🎢 ' + i18n.t('zipline'));
+    if (park.amenities.restrooms) features.push('🚻 ' + i18n.t('restrooms'));
+    if (park.amenities.parking) features.push('🅿️ ' + i18n.t('parking'));
+    if (park.amenities.cafe_with_playground_view) features.push('👀☕ ' + i18n.t('cafeWithView'));
 
     const displayFeatures = features.slice(0, 4);
 

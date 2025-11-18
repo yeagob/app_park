@@ -133,13 +133,14 @@ function renderElements(elements) {
 
 function renderAmenities(amenities) {
     const amenitiesList = {
-        water_fountain: '🚰 Fuente de agua',
-        restrooms: '🚻 Baños',
-        parking: '🅿️ Parking',
-        wheelchair_accessible: '♿ Accesible',
-        fenced: '🚧 Vallado',
-        nearby_cafe: '☕ Bar cerca',
-        nearby_supermarket: '🛒 Supermercado cerca'
+        water_fountain: '🚰 ' + i18n.t('waterFountain'),
+        restrooms: '🚻 ' + i18n.t('restrooms'),
+        parking: '🅿️ ' + i18n.t('parking'),
+        wheelchair_accessible: '♿ ' + i18n.t('wheelchairAccessible'),
+        fenced: '🚧 ' + i18n.t('fenced'),
+        nearby_cafe: '☕ ' + i18n.t('nearbyCafe'),
+        cafe_with_playground_view: '👀☕ ' + i18n.t('cafeWithView'),
+        nearby_supermarket: '🛒 ' + i18n.t('nearbySupermarket')
     };
 
     return Object.entries(amenitiesList)

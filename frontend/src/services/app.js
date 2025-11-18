@@ -327,7 +327,7 @@ const app = {
 
         // Procesar amenidades
         const amenities = formData.getAll('amenities');
-        ['water_fountain', 'restrooms', 'parking', 'wheelchair_accessible', 'fenced', 'nearby_cafe', 'nearby_supermarket'].forEach(am => {
+        ['water_fountain', 'restrooms', 'parking', 'wheelchair_accessible', 'fenced', 'nearby_cafe', 'cafe_with_playground_view', 'nearby_supermarket'].forEach(am => {
             parkData.amenities[am] = amenities.includes(am);
         });
 
