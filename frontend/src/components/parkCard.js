@@ -1,21 +1,27 @@
-// Componente: Park Card
+// Componente: Park Card - Enhanced Design
 function createParkCard(park) {
     const card = document.createElement('div');
     card.className = 'park-card';
     card.onclick = () => app.showParkDetail(park.id);
 
+    // Add staggered animation
+    card.style.opacity = '0';
+    card.style.animation = 'fadeInUp 0.6s ease-out forwards';
+
     // Obtener las características destacadas
     const features = [];
-    if (park.elements.swings) features.push('🎠 ' + i18n.t('swings'));
-    if (park.elements.slides) features.push('🛝 ' + i18n.t('slides'));
-    if (park.elements.sandbox) features.push('🏖️ ' + i18n.t('sandbox'));
-    if (park.elements.water_play) features.push('💧 ' + i18n.t('waterPlay'));
-    if (park.elements.zipline) features.push('🎢 ' + i18n.t('zipline'));
-    if (park.amenities.restrooms) features.push('🚻 ' + i18n.t('restrooms'));
-    if (park.amenities.parking) features.push('🅿️ ' + i18n.t('parking'));
-    if (park.amenities.cafe_with_playground_view) features.push('👀☕ ' + i18n.t('cafeWithView'));
+    if (park.elements.swings) features.push({ icon: '🎠', label: i18n.t('swings'), color: 'primary' });
+    if (park.elements.slides) features.push({ icon: '🛝', label: i18n.t('slides'), color: 'secondary' });
+    if (park.elements.sandbox) features.push({ icon: '🏖️', label: i18n.t('sandbox'), color: 'accent' });
+    if (park.elements.water_play) features.push({ icon: '💧', label: i18n.t('waterPlay'), color: 'info' });
+    if (park.elements.zipline) features.push({ icon: '🎢', label: i18n.t('zipline'), color: 'primary' });
+    if (park.elements.baby_area) features.push({ icon: '👶', label: i18n.t('babyArea'), color: 'accent' });
+    if (park.amenities.restrooms) features.push({ icon: '🚻', label: i18n.t('restrooms'), color: 'secondary' });
+    if (park.amenities.parking) features.push({ icon: '🅿️', label: i18n.t('parking'), color: 'secondary' });
+    if (park.amenities.cafe_with_playground_view) features.push({ icon: '👀☕', label: i18n.t('cafeWithView'), color: 'accent' });
+    if (park.amenities.wheelchair_accessible) features.push({ icon: '♿', label: i18n.t('wheelchairAccessible'), color: 'success' });
 
-    const displayFeatures = features.slice(0, 4);
+    const displayFeatures = features.slice(0, 5);
 
     // Calcular imagen (placeholder por ahora)
     const imageUrl = park.photos.main
@@ -26,21 +32,24 @@ function createParkCard(park) {
         ? `<div class="park-distance">📍 ${formatDistance(park.distance)}</div>`
         : '';
 
+    // Determinar badge de rating
+    const ratingClass = park.rating.average >= 4.5 ? 'excellent' : park.rating.average >= 4.0 ? 'good' : park.rating.average >= 3.0 ? 'fair' : 'poor';
+
     card.innerHTML = `
-        ${imageUrl ? `<img src="${imageUrl}" alt="${park.name}" class="park-image">` : '<div class="park-image"></div>'}
+        ${imageUrl ? `<img src="${imageUrl}" alt="${park.name}" class="park-image" loading="lazy">` : '<div class="park-image"></div>'}
         <div class="park-content">
             <div class="park-header">
                 <h3 class="park-name">${park.name}</h3>
-                <div class="park-rating">
+                <div class="park-rating rating-${ratingClass}">
                     ⭐ ${park.rating.average.toFixed(1)}
-                    <span style="font-size: 0.8rem;">(${park.rating.count})</span>
+                    <span style="font-size: 0.75rem; opacity: 0.9;">(${park.rating.count})</span>
                 </div>
             </div>
-            <div class="park-location">📍 ${park.location.address}</div>
+            <div class="park-location">📍 ${park.location.city}, ${park.location.country}</div>
             ${distanceHtml}
             <div class="park-features">
-                ${displayFeatures.map(f => `<span class="feature-tag">${f}</span>`).join('')}
-                ${features.length > 4 ? `<span class="feature-tag">+${features.length - 4} más</span>` : ''}
+                ${displayFeatures.map(f => `<span class="feature-tag feature-${f.color}">${f.icon} ${f.label}</span>`).join('')}
+                ${features.length > 5 ? `<span class="feature-tag feature-more">+${features.length - 5} más</span>` : ''}
             </div>
         </div>
     `;
