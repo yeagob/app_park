@@ -10,6 +10,7 @@ const sampleParks = [
   {
     id: 'park_001',
     name: 'Parque del Retiro',
+    description: 'Precioso parque con mucha sombra y zonas amplias para que los niños corran. Ideal para pasar toda la mañana. Recomiendo ir temprano los fines de semana porque se llena bastante.',
     location: {
       address: 'Plaza de la Independencia, 7, Madrid',
       coordinates: {
@@ -42,6 +43,7 @@ const sampleParks = [
       baby_area: true,
       picnic_tables: true
     },
+    custom_elements: ['Estanque con barcas', 'Zona de petanca'],
     amenities: {
       water_fountain: true,
       restrooms: true,
@@ -70,6 +72,7 @@ const sampleParks = [
   {
     id: 'park_002',
     name: 'Parque de la Dehesa de la Villa',
+    description: 'Gran parque natural con senderos y zonas de juego. Perfecto para combinar naturaleza y juegos. Tiene una tirolina que encanta a los niños mayores.',
     location: {
       address: 'Calle Francos Rodríguez, Madrid',
       coordinates: {
@@ -102,6 +105,7 @@ const sampleParks = [
       baby_area: false,
       picnic_tables: true
     },
+    custom_elements: ['Circuito de obstáculos', 'Área de running'],
     amenities: {
       water_fountain: true,
       restrooms: false,
@@ -130,6 +134,7 @@ const sampleParks = [
   {
     id: 'park_003',
     name: 'Parque del Oeste',
+    description: '',
     location: {
       address: 'Paseo del Pintor Rosales, Madrid',
       coordinates: {
@@ -162,6 +167,7 @@ const sampleParks = [
       baby_area: true,
       picnic_tables: false
     },
+    custom_elements: [],
     amenities: {
       water_fountain: true,
       restrooms: true,
@@ -190,6 +196,7 @@ const sampleParks = [
   {
     id: 'park_004',
     name: 'Parque de Berlin',
+    description: '',
     location: {
       address: 'Calle Ramón y Cajal, Madrid',
       coordinates: {
@@ -222,6 +229,7 @@ const sampleParks = [
       baby_area: true,
       picnic_tables: true
     },
+    custom_elements: [],
     amenities: {
       water_fountain: true,
       restrooms: true,
@@ -250,6 +258,7 @@ const sampleParks = [
   {
     id: 'park_005',
     name: 'Jardines de Sabatini',
+    description: '',
     location: {
       address: 'Calle Bailén, 2, Madrid',
       coordinates: {
@@ -282,6 +291,7 @@ const sampleParks = [
       baby_area: false,
       picnic_tables: true
     },
+    custom_elements: [],
     amenities: {
       water_fountain: true,
       restrooms: true,

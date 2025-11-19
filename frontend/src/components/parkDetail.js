@@ -25,17 +25,37 @@ async function renderParkDetail(parkId) {
                     <h3>📍 Ubicación</h3>
                     <p><strong>Dirección:</strong> ${park.location.address}</p>
                     <p><strong>Ciudad:</strong> ${park.location.city}, ${park.location.country}</p>
+                    <p><strong>Coordenadas:</strong> ${park.location.coordinates.lat.toFixed(6)}, ${park.location.coordinates.lng.toFixed(6)}</p>
                     ${park.hours.always_open
                         ? '<p><strong>Horario:</strong> Abierto 24/7</p>'
                         : `<p><strong>Horario:</strong> ${park.hours.schedule}</p>`
                     }
                 </div>
 
+                ${park.description ? `
+                <div class="info-section">
+                    <h3>📝 Descripción</h3>
+                    <p style="line-height: 1.6; white-space: pre-wrap;">${park.description}</p>
+                </div>
+                ` : ''}
+
                 <div class="info-section">
                     <h3>🎪 Elementos del Parque</h3>
                     <div class="info-grid">
                         ${elementsHtml}
                     </div>
+                    ${park.custom_elements && park.custom_elements.length > 0 ? `
+                    <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: 8px;">
+                        <h4 style="margin: 0 0 0.5rem 0; font-size: 0.9rem; color: var(--gray);">🎯 Elementos Personalizados:</h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            ${park.custom_elements.map(el => `
+                                <span style="padding: 0.25rem 0.75rem; background: var(--primary); color: white; border-radius: 16px; font-size: 0.9rem;">
+                                    ${el}
+                                </span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    ` : ''}
                 </div>
 
                 <div class="info-section">

@@ -4,6 +4,8 @@ const app = {
     currentFilters: {},
     userLocation: null,
     allParks: [],
+    parkLocationMap: null,
+    parkMarker: null,
 
     async init() {
         console.log('🌳 Iniciando Parks Social Network...');
@@ -282,10 +284,97 @@ const app = {
         const modal = document.getElementById('addParkModal');
         modal.style.display = 'block';
 
-        // Pre-rellenar coordenadas si hay ubicación del usuario
+        // Limpiar coordenadas
+        document.getElementById('parkLat').value = '';
+        document.getElementById('parkLng').value = '';
+        document.getElementById('selectedCoords').innerHTML = '<span data-i18n="noLocationSelected">Selecciona una ubicación en el mapa</span>';
+
+        // Inicializar mapa después de que el modal sea visible
+        setTimeout(() => {
+            this.initParkLocationMap();
+        }, 100);
+    },
+
+    initParkLocationMap() {
+        // Destruir mapa anterior si existe
+        if (this.parkLocationMap) {
+            this.parkLocationMap.remove();
+            this.parkLocationMap = null;
+            this.parkMarker = null;
+        }
+
+        // Coordenadas por defecto (Madrid, España)
+        const defaultLat = this.userLocation ? this.userLocation.lat : 40.4168;
+        const defaultLng = this.userLocation ? this.userLocation.lng : -3.7038;
+
+        // Crear mapa
+        this.parkLocationMap = L.map('parkLocationMap').setView([defaultLat, defaultLng], 13);
+
+        // Añadir capa de tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(this.parkLocationMap);
+
+        // Crear icono personalizado para el marcador
+        const customIcon = L.icon({
+            iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSI0MCI+PHBhdGggZmlsbD0iIzI1OGE1NyIgZD0iTTE2IDBDNy4xNiAwIDAgNy4xNiAwIDE2YzAgMTIgMTYgMjQgMTYgMjRzMTYtMTIgMTYtMjRjMC04Ljg0LTcuMTYtMTYtMTYtMTZ6bTAgMjJjLTMuMzEgMC02LTIuNjktNi02czIuNjktNiA2LTYgNiAyLjY5IDYgNi0yLjY5IDYtNiA2eiIvPjwvc3ZnPg==',
+            iconSize: [32, 40],
+            iconAnchor: [16, 40],
+            popupAnchor: [0, -40]
+        });
+
+        // Añadir marcador arrastrable
+        this.parkMarker = L.marker([defaultLat, defaultLng], {
+            draggable: true,
+            icon: customIcon
+        }).addTo(this.parkLocationMap);
+
+        // Actualizar coordenadas cuando se arrastra el marcador
+        this.parkMarker.on('dragend', (e) => {
+            const position = e.target.getLatLng();
+            this.updateParkCoordinates(position.lat, position.lng);
+        });
+
+        // Permitir hacer clic en el mapa para mover el marcador
+        this.parkLocationMap.on('click', (e) => {
+            this.parkMarker.setLatLng(e.latlng);
+            this.updateParkCoordinates(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Si hay ubicación del usuario, mostrar su posición
         if (this.userLocation) {
-            document.querySelector('input[name="lat"]').value = this.userLocation.lat;
-            document.querySelector('input[name="lng"]').value = this.userLocation.lng;
+            this.updateParkCoordinates(this.userLocation.lat, this.userLocation.lng);
+        }
+    },
+
+    updateParkCoordinates(lat, lng) {
+        // Actualizar campos ocultos
+        document.getElementById('parkLat').value = lat.toFixed(6);
+        document.getElementById('parkLng').value = lng.toFixed(6);
+
+        // Actualizar texto de coordenadas seleccionadas
+        document.getElementById('selectedCoords').innerHTML =
+            `📍 <strong>${lat.toFixed(6)}, ${lng.toFixed(6)}</strong>`;
+    },
+
+    centerMapOnUserLocation() {
+        if (!this.userLocation) {
+            alert('No se pudo obtener tu ubicación. Por favor, permite el acceso a la ubicación en tu navegador.');
+            this.getCurrentLocation().then(() => {
+                if (this.userLocation && this.parkLocationMap) {
+                    this.parkLocationMap.setView([this.userLocation.lat, this.userLocation.lng], 15);
+                    this.parkMarker.setLatLng([this.userLocation.lat, this.userLocation.lng]);
+                    this.updateParkCoordinates(this.userLocation.lat, this.userLocation.lng);
+                }
+            });
+            return;
+        }
+
+        if (this.parkLocationMap) {
+            this.parkLocationMap.setView([this.userLocation.lat, this.userLocation.lng], 15);
+            this.parkMarker.setLatLng([this.userLocation.lat, this.userLocation.lng]);
+            this.updateParkCoordinates(this.userLocation.lat, this.userLocation.lng);
         }
     },
 
@@ -300,6 +389,7 @@ const app = {
         // Construir objeto de parque
         const parkData = {
             name: formData.get('name'),
+            description: formData.get('description') || '',
             location: {
                 address: formData.get('address'),
                 coordinates: {
@@ -330,6 +420,17 @@ const app = {
         ['water_fountain', 'restrooms', 'parking', 'wheelchair_accessible', 'fenced', 'nearby_cafe', 'cafe_with_playground_view', 'nearby_supermarket'].forEach(am => {
             parkData.amenities[am] = amenities.includes(am);
         });
+
+        // Procesar elementos personalizados
+        const customElementsText = formData.get('custom_elements') || '';
+        if (customElementsText.trim()) {
+            parkData.custom_elements = customElementsText
+                .split(',')
+                .map(el => el.trim())
+                .filter(el => el.length > 0);
+        } else {
+            parkData.custom_elements = [];
+        }
 
         try {
             const newPark = await api.createPark(parkData);
