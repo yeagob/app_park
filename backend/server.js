@@ -6,6 +6,7 @@ const authRouter = require('./routes/auth');
 const parksRouter = require('./routes/parks');
 const photosRouter = require('./routes/photos');
 const commentsRouter = require('./routes/comments');
+const bulletinsRouter = require('./routes/bulletins');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -23,6 +24,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/parks', parksRouter);
 app.use('/api/photos', photosRouter);
 app.use('/api/comments', commentsRouter);
+app.use('/api/bulletins', bulletinsRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -34,7 +36,8 @@ async function initializeDataDirectories() {
   const directories = [
     path.join(__dirname, 'data/parks'),
     path.join(__dirname, 'data/photos'),
-    path.join(__dirname, 'data/comments')
+    path.join(__dirname, 'data/comments'),
+    path.join(__dirname, 'data/bulletins')
   ];
 
   for (const dir of directories) {

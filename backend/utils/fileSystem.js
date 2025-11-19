@@ -5,6 +5,7 @@ const DATA_DIR = path.join(__dirname, '../data');
 const PARKS_DIR = path.join(DATA_DIR, 'parks');
 const PHOTOS_DIR = path.join(DATA_DIR, 'photos');
 const COMMENTS_DIR = path.join(DATA_DIR, 'comments');
+const BULLETINS_DIR = path.join(DATA_DIR, 'bulletins');
 const INDEX_FILE = path.join(DATA_DIR, 'index.json');
 
 // Leer el índice de parques
@@ -93,6 +94,30 @@ async function generateParkId() {
   return `park_${String(newId).padStart(3, '0')}`;
 }
 
+// Leer anuncios del tablón de un parque
+async function readBulletins(parkId) {
+  const filePath = path.join(BULLETINS_DIR, `${parkId}_bulletins.json`);
+  try {
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    return { parkId, bulletins: [], lastId: 0 };
+  }
+}
+
+// Escribir anuncios del tablón de un parque
+async function writeBulletins(parkId, bulletinsData) {
+  const filePath = path.join(BULLETINS_DIR, `${parkId}_bulletins.json`);
+  await fs.writeFile(filePath, JSON.stringify(bulletinsData, null, 2));
+}
+
+// Generar nuevo ID de anuncio para un parque
+async function generateBulletinId(parkId) {
+  const bulletinsData = await readBulletins(parkId);
+  const newId = bulletinsData.lastId + 1;
+  return `bulletin_${String(newId).padStart(3, '0')}`;
+}
+
 module.exports = {
   readIndex,
   writeIndex,
@@ -104,7 +129,11 @@ module.exports = {
   writeComments,
   createPhotosDirectory,
   generateParkId,
+  readBulletins,
+  writeBulletins,
+  generateBulletinId,
   PARKS_DIR,
   PHOTOS_DIR,
-  COMMENTS_DIR
+  COMMENTS_DIR,
+  BULLETINS_DIR
 };

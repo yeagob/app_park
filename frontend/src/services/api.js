@@ -250,5 +250,60 @@ const api = {
         }
 
         return await response.json();
+    },
+
+    // Bulletins (Tablón de anuncios) endpoints
+    async getBulletins(parkId) {
+        const response = await fetch(`${API_BASE_URL}/bulletins/${parkId}`);
+
+        if (!response.ok) {
+            throw new Error('Error al obtener anuncios del tablón');
+        }
+
+        return await response.json();
+    },
+
+    async createBulletin(parkId, bulletinData) {
+        const response = await fetch(`${API_BASE_URL}/bulletins/${parkId}`, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(bulletinData)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al crear anuncio');
+        }
+
+        return await response.json();
+    },
+
+    async updateBulletin(parkId, bulletinId, bulletinData) {
+        const response = await fetch(`${API_BASE_URL}/bulletins/${parkId}/${bulletinId}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(bulletinData)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al actualizar anuncio');
+        }
+
+        return await response.json();
+    },
+
+    async deleteBulletin(parkId, bulletinId) {
+        const response = await fetch(`${API_BASE_URL}/bulletins/${parkId}/${bulletinId}`, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al eliminar anuncio');
+        }
+
+        return await response.json();
     }
 };

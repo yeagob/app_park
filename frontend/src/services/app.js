@@ -492,6 +492,71 @@ const app = {
             console.error('Error rating park:', error);
             alert('Error al valorar el parque: ' + error.message);
         }
+    },
+
+    // Funciones del Tablón de Anuncios
+    toggleBulletinForm(parkId) {
+        const form = document.getElementById(`bulletinFormContent-${parkId}`);
+        if (form) {
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    },
+
+    async submitBulletin(event, parkId) {
+        event.preventDefault();
+
+        if (!this.checkAuth()) return;
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        const timeStart = formData.get('timeStart');
+        const timeEnd = formData.get('timeEnd');
+        const contactName = formData.get('contactName');
+        const contactPhone = formData.get('contactPhone');
+
+        const bulletinData = {
+            type: formData.get('type'),
+            title: formData.get('title'),
+            description: formData.get('description'),
+            ageRange: formData.get('ageRange') || null,
+            timeRange: (timeStart && timeEnd) ? { start: timeStart, end: timeEnd } : null,
+            contactInfo: (contactName || contactPhone) ? {
+                name: contactName || null,
+                phone: contactPhone || null
+            } : null,
+            daysToExpire: 30
+        };
+
+        try {
+            await api.createBulletin(parkId, bulletinData);
+            form.reset();
+            this.toggleBulletinForm(parkId);
+            alert('Anuncio publicado exitosamente');
+            // Recargar los detalles del parque para mostrar el nuevo anuncio
+            await renderParkDetail(parkId);
+        } catch (error) {
+            console.error('Error creating bulletin:', error);
+            alert('Error al publicar anuncio: ' + error.message);
+        }
+    },
+
+    async deleteBulletin(parkId, bulletinId) {
+        if (!this.checkAuth()) return;
+
+        if (!confirm('¿Estás seguro de que quieres eliminar este anuncio?')) {
+            return;
+        }
+
+        try {
+            await api.deleteBulletin(parkId, bulletinId);
+            alert('Anuncio eliminado exitosamente');
+            // Recargar los detalles del parque
+            await renderParkDetail(parkId);
+        } catch (error) {
+            console.error('Error deleting bulletin:', error);
+            alert('Error al eliminar anuncio: ' + error.message);
+        }
     }
 };
 

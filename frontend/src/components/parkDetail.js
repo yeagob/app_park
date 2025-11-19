@@ -6,9 +6,11 @@ async function renderParkDetail(parkId) {
     try {
         const park = await api.getPark(parkId);
         const commentsData = await api.getComments(parkId);
+        const bulletinsData = await api.getBulletins(parkId);
 
         const elementsHtml = renderElements(park.elements);
         const amenitiesHtml = renderAmenities(park.amenities);
+        const bulletinsHtml = renderBulletins(bulletinsData.bulletins, parkId);
         const commentsHtml = renderComments(commentsData.comments, parkId);
 
         container.innerHTML = `
@@ -94,6 +96,70 @@ async function renderParkDetail(parkId) {
                                 ${rating}⭐
                             </button>
                         `).join('')}
+                    </div>
+                </div>
+
+                <div class="bulletins-section">
+                    <h3>📌 Tablón de Anuncios (${bulletinsData.bulletins.length})</h3>
+                    <p style="color: var(--gray); font-size: 0.9rem; margin-bottom: 1rem;">
+                        Comparte anuncios con otros padres: busca compañeros de juegos, ofrece o busca cuidado de niños, o cualquier cosa relacionada con el parque.
+                    </p>
+
+                    ${api.auth.isAuthenticated() ? `
+                    <div class="bulletin-form" id="bulletinForm-${parkId}">
+                        <button class="btn btn-primary" onclick="app.toggleBulletinForm('${parkId}')" style="margin-bottom: 1rem;">
+                            ➕ Añadir Anuncio
+                        </button>
+                        <form id="bulletinFormContent-${parkId}" onsubmit="app.submitBulletin(event, '${parkId}')" style="display: none;">
+                            <div class="form-group">
+                                <label>Tipo de anuncio:</label>
+                                <select name="type" required style="margin-bottom: 0.5rem;">
+                                    <option value="">Selecciona un tipo...</option>
+                                    <option value="looking_for_playmate">🧒 Busco niños para jugar</option>
+                                    <option value="looking_for_childcare">👶 Busco cuidador/a</option>
+                                    <option value="offering_childcare">🤱 Ofrezco cuidado de niños</option>
+                                    <option value="offering_service">🎨 Ofrezco servicio/actividad</option>
+                                    <option value="other">📝 Otro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Título:</label>
+                                <input type="text" name="title" placeholder="Ej: Busco niños 5-7 años para jugar" required style="margin-bottom: 0.5rem;">
+                            </div>
+                            <div class="form-group">
+                                <label>Descripción:</label>
+                                <textarea name="description" placeholder="Describe tu anuncio..." required style="margin-bottom: 0.5rem;"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Rango de edad (opcional):</label>
+                                <input type="text" name="ageRange" placeholder="Ej: 5-7, 8+, 2-4" style="margin-bottom: 0.5rem;">
+                            </div>
+                            <div class="form-group">
+                                <label>Horario (opcional):</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="time" name="timeStart" placeholder="Desde" style="margin-bottom: 0.5rem;">
+                                    <input type="time" name="timeEnd" placeholder="Hasta" style="margin-bottom: 0.5rem;">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Contacto (opcional):</label>
+                                <input type="text" name="contactName" placeholder="Tu nombre" style="margin-bottom: 0.5rem;">
+                                <input type="text" name="contactPhone" placeholder="Teléfono o email" style="margin-bottom: 0.5rem;">
+                            </div>
+                            <div class="bulletin-form-actions">
+                                <button type="submit" class="btn btn-primary">Publicar Anuncio</button>
+                                <button type="button" class="btn btn-secondary" onclick="app.toggleBulletinForm('${parkId}')">Cancelar</button>
+                            </div>
+                        </form>
+                    </div>
+                    ` : `
+                    <div class="alert-info">
+                        <p>Inicia sesión para publicar anuncios en el tablón</p>
+                    </div>
+                    `}
+
+                    <div id="bulletinsList-${parkId}">
+                        ${bulletinsHtml}
                     </div>
                 </div>
 
@@ -232,4 +298,80 @@ function formatDate(dateString) {
         month: 'long',
         day: 'numeric'
     });
+}
+
+function renderBulletins(bulletins, parkId) {
+    if (bulletins.length === 0) {
+        return '<p class="text-center" style="color: var(--gray); padding: 2rem;">No hay anuncios todavía. ¡Sé el primero en publicar!</p>';
+    }
+
+    return bulletins.map(bulletin => {
+        const isOwner = api.auth.isAuthenticated() && api.auth.getUser().email === bulletin.createdBy;
+        const bulletinTypeInfo = getBulletinTypeInfo(bulletin.type);
+
+        return `
+            <div class="bulletin-card ${bulletinTypeInfo.class}">
+                <div class="bulletin-header">
+                    <span class="bulletin-type">${bulletinTypeInfo.icon} ${bulletinTypeInfo.label}</span>
+                    <span class="bulletin-date">${formatDate(bulletin.createdAt)}</span>
+                </div>
+                <h4 class="bulletin-title">${bulletin.title}</h4>
+                <p class="bulletin-description">${bulletin.description}</p>
+                ${bulletin.ageRange ? `
+                    <div class="bulletin-info">
+                        <span class="bulletin-tag">👶 Edad: ${bulletin.ageRange} años</span>
+                    </div>
+                ` : ''}
+                ${bulletin.timeRange ? `
+                    <div class="bulletin-info">
+                        <span class="bulletin-tag">🕐 Horario: ${bulletin.timeRange.start} - ${bulletin.timeRange.end}</span>
+                    </div>
+                ` : ''}
+                ${bulletin.contactInfo ? `
+                    <div class="bulletin-contact">
+                        <strong>📞 Contacto:</strong> ${bulletin.contactInfo.name || ''}${bulletin.contactInfo.phone ? ` - ${bulletin.contactInfo.phone}` : ''}
+                    </div>
+                ` : ''}
+                ${isOwner ? `
+                    <div class="bulletin-actions">
+                        <button class="btn btn-danger btn-sm" onclick="app.deleteBulletin('${parkId}', '${bulletin.id}')">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function getBulletinTypeInfo(type) {
+    const types = {
+        looking_for_playmate: {
+            icon: '🧒',
+            label: 'Busco compañero/a de juegos',
+            class: 'bulletin-playmate'
+        },
+        looking_for_childcare: {
+            icon: '👶',
+            label: 'Busco cuidador/a',
+            class: 'bulletin-childcare'
+        },
+        offering_childcare: {
+            icon: '🤱',
+            label: 'Ofrezco cuidado de niños',
+            class: 'bulletin-offering'
+        },
+        offering_service: {
+            icon: '🎨',
+            label: 'Ofrezco servicio/actividad',
+            class: 'bulletin-service'
+        },
+        other: {
+            icon: '📝',
+            label: 'Otro',
+            class: 'bulletin-other'
+        }
+    };
+
+    return types[type] || types.other;
 }
